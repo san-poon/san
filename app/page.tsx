@@ -1,103 +1,147 @@
 import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { getAllPosts } from "@/core/data/access/blog";
+
+export const dynamic = "force-static";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const posts = getAllPosts().slice(0, 3);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  return (
+    <main className="container mx-auto max-w-4xl px-6 py-12 sm:py-16">
+      {/* Hero */}
+      <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex-1">
+          <h1 className="text-3xl font-bold sm:text-4xl">Hi, I’m San Poon.</h1>
+          <p className="mt-3 text-foreground/80">
+            Web Developer crafting learning ai native web tools. Currently building <Link href="https://www.axinder.com" target="_blank" className="text-primary underline">Axinder</Link>, an AI Tutor.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <div className="shrink-0">
           <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            src="/san-poon-global-profile.jpg"
+            alt="San Poon headshot"
+            width={112}
+            height={112}
+            className="rounded-full ring-1 ring-border"
+            priority
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </div>
+      </section>
+
+      {/* Featured projects */}
+      <section id="projects" className="mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border px-2 py-1 text-xs text-foreground/70">Featured</span>
+            <h2 className="text-xl font-semibold">Featured projects</h2>
+          </div>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl border p-6 sm:p-8">
+          <div className="pointer-events-none absolute -top-24 -left-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+          <div className="grid gap-4 sm:grid-cols-2">
+              <div className="group rounded-xl border bg-background/50 p-5 backdrop-blur-sm transition-all hover:shadow-sm">
+                <Link href="https://www.axinder.com" target="_blank">
+                  <div className="relative h-16 w-16 rounded-full bg-cyan-50 ring-1 ring-inset ring-border/50 dark:bg-cyan-500/30">
+                    <Image
+                      src="/axinder.svg"
+                      alt="Axinder logo"
+                      fill
+                      className="object-contain p-4 dark:invert"
+                    />
+                  </div>
+                  <h3 className="mt-4 text-lg font-medium">Axinder</h3>
+                </Link>
+                <p className="mt-1 text-sm text-foreground/70">
+                  AI Tutor for stem fields.
+                </p>
+                <div className="mt-3 flex gap-2 text-xs text-foreground/70">
+                  <span>Next.js</span>
+                  <span>Postgres</span>
+                  <span>ai-sdk</span>
+                  <span>Vercel</span>
+                </div>
+              </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest blog posts (highlighted) */}
+      <section className="mt-12">
+        <div className="relative overflow-hidden rounded-2xl border p-6 sm:p-8">
+          <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+          <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="rounded-full border px-2 py-1 text-xs text-foreground/70">Latest</span>
+              <h2 className="text-xl font-semibold">Latest posts</h2>
+            </div>
+            <Button asChild variant="link">
+              <Link href="/blog">See all</Link>
+            </Button>
+          </div>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {posts.map(({ slug, en }) => (
+              <li key={slug} className="group rounded-xl border bg-background/50 p-4 transition-all hover:shadow-sm">
+                <Link href={`/blog/${slug}`} className="block">
+                  <h3 className="text-base font-medium group-hover:underline">
+                    {en.title}
+                  </h3>
+                  <p className="mt-0.5 text-xs text-foreground/60">
+                    {new Date(en.date).toLocaleDateString()}
+                  </p>
+                  <p className="mt-2 text-sm text-foreground/80">{en.summary}</p>
+                  {en.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {en.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="rounded-md border px-1.5 py-0.5 text-[10px] text-foreground/70">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </Link>
+              </li>
+            ))}
+            {posts.length === 0 && (
+              <li className="text-foreground/70">No posts yet.</li>
+            )}
+          </ul>
+        </div>
+      </section>
+
+      {/* About snapshot */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold">About</h2>
+        <p className="mt-2 text-foreground/80">
+          I build ai & web native tools for learning and teaching.
+        </p>
+      </section>
+
+      {/* Skills / Tech stack */}
+      <section className="mt-12">
+        <h2 className="text-xl font-semibold">Skills</h2>
+        <div className="mt-3 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 md:grid-cols-3">
+          {[
+            "TypeScript",
+            "React",
+            "Next.js",
+            "Postgres",
+            "Drizzle ORM",
+            "Tailwind CSS",
+            "Testing",
+            "ai-sdk",
+            "cli, git"
+          ].map((skill) => (
+            <span key={skill} className="rounded-md border px-2 py-1">
+              {skill}
+            </span>
+          ))}
+        </div>
+      </section>
+
+    </main>
   );
 }
