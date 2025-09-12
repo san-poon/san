@@ -32,43 +32,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Featured projects */}
-      <section id="projects" className="mt-12">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="rounded-full border px-2 py-1 text-xs text-foreground/70">Featured</span>
-            <h2 className="text-xl font-semibold">Featured projects</h2>
-          </div>
-        </div>
-        <div className="relative overflow-hidden rounded-2xl border p-6 sm:p-8">
-          <div className="pointer-events-none absolute -top-24 -left-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
-          <div className="grid gap-4 sm:grid-cols-2">
-              <div className="group rounded-xl border bg-background/50 p-5 backdrop-blur-sm transition-all hover:shadow-sm">
-                <Link href="https://www.axinder.com" target="_blank">
-                  <div className="relative h-16 w-16 rounded-full bg-cyan-50 ring-1 ring-inset ring-border/50 dark:bg-cyan-500/30">
-                    <Image
-                      src="/axinder.svg"
-                      alt="Axinder logo"
-                      fill
-                      className="object-contain p-4 dark:invert"
-                    />
-                  </div>
-                  <h3 className="mt-4 text-lg font-medium">Axinder</h3>
-                </Link>
-                <p className="mt-1 text-sm text-foreground/70">
-                  AI Tutor for stem fields.
-                </p>
-                <div className="mt-3 flex gap-2 text-xs text-foreground/70">
-                  <span>Next.js</span>
-                  <span>Postgres</span>
-                  <span>ai-sdk</span>
-                  <span>Vercel</span>
-                </div>
-              </div>
-          </div>
-        </div>
-      </section>
-
       {/* Latest blog posts (highlighted) */}
       <section className="mt-12">
         <div className="relative overflow-hidden rounded-2xl border p-6 sm:p-8">
@@ -109,6 +72,45 @@ export default function Home() {
               <li className="text-foreground/70">No posts yet.</li>
             )}
           </ul>
+        </div>
+      </section>
+
+
+
+      {/* Featured projects */}
+      <section id="projects" className="mt-12">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border px-2 py-1 text-xs text-foreground/70">Featured</span>
+            <h2 className="text-xl font-semibold">Projects</h2>
+          </div>
+        </div>
+        <div className="relative overflow-hidden rounded-2xl border p-6 sm:p-8">
+          <div className="pointer-events-none absolute -top-24 -left-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" aria-hidden />
+          <div className="grid gap-4 sm:grid-cols-2">
+              <div className="group rounded-xl border bg-background/50 p-5 backdrop-blur-sm transition-all hover:shadow-sm">
+                <Link href="https://www.axinder.com" target="_blank">
+                  <div className="relative h-16 w-16 rounded-full bg-cyan-50 ring-1 ring-inset ring-border/50 dark:bg-cyan-500/30">
+                    <Image
+                      src="/axinder.svg"
+                      alt="Axinder logo"
+                      fill
+                      className="object-contain p-4 dark:invert"
+                    />
+                  </div>
+                  <h3 className="mt-4 text-lg font-medium">Axinder</h3>
+                </Link>
+                <p className="mt-1 text-sm text-foreground/70">
+                  AI Tutor for stem fields.
+                </p>
+                <div className="mt-3 flex gap-2 text-xs text-foreground/70">
+                  <span>Next.js</span>
+                  <span>Postgres</span>
+                  <span>ai-sdk</span>
+                  <span>Vercel</span>
+                </div>
+              </div>
+          </div>
         </div>
       </section>
 
