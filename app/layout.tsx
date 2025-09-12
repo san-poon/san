@@ -35,10 +35,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="flex flex-col min-h-screen">
+          <main className="container mx-auto max-w-4xl px-6 py-12 sm:py-16">
           <div className="fixed right-4 top-4 z-50">
             <UserMenu />
           </div>
           {children}
+          </main>
           </div>
           <footer className="container mt-24 mx-auto max-w-4xl px-6 py-10 text-center">
             <Button asChild variant="outline" className=" text-xs text-muted-foreground">

@@ -9,7 +9,7 @@ export default function Home() {
   const posts = getAllPosts().slice(0, 3);
 
   return (
-    <main className="container mx-auto max-w-4xl px-6 py-12 sm:py-16">
+    <>
       {/* Hero */}
       <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
@@ -141,7 +141,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      </>
 
-    </main>
   );
 }
