@@ -13,9 +13,9 @@ export default function Home() {
       {/* Hero */}
       <section className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1">
-          <h1 className="text-3xl font-bold sm:text-4xl">Hi, I’m San Poon.</h1>
+          <h1 className="text-3xl font-bold sm:text-4xl">Hi, I’m San.</h1>
           <p className="mt-3 text-foreground/80">
-            Web Developer crafting learning ai native web tools. Currently building <Link href="https://www.axinder.com" target="_blank" className="text-primary underline">Axinder</Link>, an AI Tutor.
+            A web developer crafting ai native learning web tools. Am currently building <Link href="https://www.axinder.com" target="_blank" className="text-primary underline">Axinder</Link>, an AI Tutor.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
           </div>
