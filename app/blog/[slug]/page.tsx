@@ -10,25 +10,27 @@ export async function generateStaticParams() {
   return getAllSlugs().map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const { frontmatter } = getPostBySlug(params.slug, "en");
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const { frontmatter } = getPostBySlug(slug, "en");
   if (!frontmatter) return {};
   return {
     title: frontmatter.title,
     description: frontmatter.summary,
     alternates: {
-      canonical: `/blog/${params.slug}`,
+      canonical: `/blog/${slug}`,
     },
   };
 }
 
-export default function BlogPostPage({ params }: { params: { slug: string } }) {
+export default async function BlogPostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   const { frontmatter: enFrontmatter, content: enContent } = getPostBySlug(
-    params.slug,
+    slug,
     "en",
   );
   const { frontmatter: neFrontmatter, content: neContent } = getPostBySlug(
-    params.slug,
+    slug,
     "ne",
   );
 
