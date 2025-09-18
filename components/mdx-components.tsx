@@ -1,26 +1,36 @@
 import type { ComponentProps, HTMLAttributes } from "react";
 import NextImage from "next/image";
 import { cn } from "@/lib/utils";
+import { Abbr } from "@/components/ui/abbr";
+import { HorizontalRow } from "@/components/ui/horizontal-row";
+import { LinkComponent } from "@/components/ui/link";
+import { Quote } from "@/components/ui/quote";
 
 type ComponentMap = Record<string, React.ComponentType<any>>;
 
 const H1 = (props: HTMLAttributes<HTMLHeadingElement>) => (
-  <h1 {...props} className={cn("scroll-m-20 text-4xl font-bold tracking-tight", props.className)} />
+  <h1 {...props} className={cn("scroll-m-20 text-4xl font-bold tracking-tight font-serif", props.className)} />
 );
 
 const H2 = (props: HTMLAttributes<HTMLHeadingElement>) => (
   <h2
     {...props}
-    className={cn("scroll-m-20 pb-2 text-3xl font-semibold tracking-tight first:mt-0", props.className)}
+    className={cn("scroll-m-20 mt-10 mb-2 text-3xl font-semibold tracking-tight first:mt-0 font-serif", props.className)}
   />
 );
 
 const H3 = (props: HTMLAttributes<HTMLHeadingElement>) => (
-  <h3 {...props} className={cn("scroll-m-20 text-2xl font-semibold tracking-tight", props.className)} />
+  <h3 {...props} className={cn("scroll-m-20 mt-8 mb-2 text-2xl font-semibold tracking-tight font-serif", props.className)} />
 );
 
 const P = (props: HTMLAttributes<HTMLParagraphElement>) => (
-  <p {...props} className={cn("leading-7 [&:not(:first-child)]:mt-6", props.className)} />
+  <p
+    {...props}
+    className={cn(
+      "leading-7 [&:not(:first-child)]:mt-6 [h2+&]:mt-2 [h3+&]:mt-2",
+      props.className
+    )}
+  />
 );
 
 const UL = (props: HTMLAttributes<HTMLUListElement>) => (
@@ -55,6 +65,14 @@ const ImageComp = (props: ComponentProps<typeof NextImage>) => (
   <NextImage {...props} className={cn("rounded-md border", props.className)} />
 );
 
+const Strong = (props: HTMLAttributes<HTMLElement>) => (
+  <strong {...props} className={cn("font-bold text-primary", props.className)} />
+);
+
+const Em = (props: HTMLAttributes<HTMLElement>) => (
+  <em {...props} className={cn("italic text-primary", props.className)} />
+);
+
 export const mdxComponents: ComponentMap = {
   h1: H1,
   h2: H2,
@@ -67,5 +85,13 @@ export const mdxComponents: ComponentMap = {
   pre: Pre,
   img: Img,
   Image: ImageComp,
+  strong: Strong,
+  em: Em,
+  a: LinkComponent,
+  Link: LinkComponent,
+  Abbr: Abbr,
+  abbr: Abbr,
+  HorizontalRow: HorizontalRow,
+  Quote: Quote,
 };
 
