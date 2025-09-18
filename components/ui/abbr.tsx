@@ -27,7 +27,7 @@ function Abbr(props: HTMLAttributes<HTMLElement> & { title?: string }) {
       )}
     >
       {children}
-      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap max-w-xs z-50 border">
+      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-popover text-popover-foreground text-sm rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-normal break-words max-w-[90vw] sm:max-w-xs z-50 border">
         {title}
         <span className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-popover"></span>
       </span>

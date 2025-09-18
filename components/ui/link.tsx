@@ -15,7 +15,7 @@ export const LinkComponent = ({ href, children, className, ...props }: LinkProps
   const isExternal = isExternalLink(href);
   
   const linkClasses = cn(
-    "underline-offset-4 underline decoration-blue-500/80 decoration-1 focus:underline focus:outline-none",
+    "underline-offset-4 underline decoration-blue-500/80 decoration-1 focus:underline focus:outline-none break-words",
     className
   );
 
