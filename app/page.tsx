@@ -21,16 +21,6 @@ export default function Home() {
           <div className="mt-5 flex flex-wrap gap-3">
           </div>
         </div>
-        <div className="shrink-0">
-          <Image
-            src="/san-poon-global-profile.jpg"
-            alt="San Poon headshot"
-            width={112}
-            height={112}
-            className="rounded-full ring-1 ring-border"
-            priority
-          />
-        </div>
       </section>
 
       {/* Latest blog posts (highlighted) */}
