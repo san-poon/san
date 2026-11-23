@@ -14,6 +14,7 @@ import { HomeExperience } from "@/components/home-experience";
 import { CloseIcon } from "@/components/icons";
 import { COLOR_SCHEME_OPTIONS, colorScheme } from "@/lib/preferences";
 import {
+  AXINDER_SPOTLIGHT,
   CONTROLS,
   HORIZONS,
   IDENTITY,
@@ -52,7 +53,7 @@ function TestShell({ children }: { children: React.ReactNode }) {
 }
 
 describe("HomeExperience", () => {
-  test("agent bridge can inspect every control, step the journey, and register WebMCP tools", async () => {
+  test("agent bridge can inspect controls, step chapters prev/next, open quick recap, and register WebMCP tools", async () => {
     const tools = new Map<string, { execute: (input: object) => unknown }>();
     Object.assign(document, {
       modelContext: {
@@ -88,11 +89,12 @@ describe("HomeExperience", () => {
       for (const expected of [
         CONTROLS.portraitButtonLabel,
         CONTROLS.themeGroupLabel,
-        CONTROLS.horizonGroupLabel,
         "the craft of the experience",
         "lasting leverage",
-        "explore the tutor",
-        `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
+        CONTROLS.previousChapterLabel,
+        CONTROLS.nextChapterLabel,
+        RECALL.triggerLabel,
+        AXINDER_SPOTLIGHT.actionLabel,
         "axinder",
         "github",
         "x",
@@ -103,8 +105,8 @@ describe("HomeExperience", () => {
       const webMcpSnapshot = await tools.get("snapshot")?.execute({});
       expect(Array.isArray(webMcpSnapshot)).toBe(true);
 
-      // Drive color theme and horizon via agent.act()
-      const stepResult = await agent.act({
+      // Drive color theme and step forward via next button twice
+      const stepForward = await agent.act({
         steps: [
           {
             ref: CONTROLS.themeGroupLabel,
@@ -112,32 +114,45 @@ describe("HomeExperience", () => {
             args: ["dark"],
           },
           {
-            ref: `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
+            ref: CONTROLS.nextChapterLabel,
             action: "press",
           },
         ],
       });
-      expect(stepResult.ok, stepResult.error?.message).toBe(true);
+      expect(stepForward.ok, stepForward.error?.message).toBe(true);
       expect(colorScheme.get().value).toBe("dark");
       expect(
         screen.getByRole("heading", { name: HORIZONS.next.title }),
       ).toBeTruthy();
 
-      const thirdBeat = await agent.act({
+      const thirdChapter = await agent.act({
         steps: [
           {
-            ref: CONTROLS.horizonGroupLabel,
-            action: "setValue",
-            args: [HORIZONS["long-game"].tabLabel],
+            ref: CONTROLS.nextChapterLabel,
+            action: "press",
           },
         ],
       });
-      expect(thirdBeat.ok, thirdBeat.error?.message).toBe(true);
+      expect(thirdChapter.ok, thirdChapter.error?.message).toBe(true);
       expect(
         screen.getByRole("heading", { name: HORIZONS["long-game"].title }),
       ).toBeTruthy();
 
-      // Open recall modal and flip all three cards
+      // Step back via previous button
+      const stepBack = await agent.act({
+        steps: [
+          {
+            ref: CONTROLS.previousChapterLabel,
+            action: "press",
+          },
+        ],
+      });
+      expect(stepBack.ok, stepBack.error?.message).toBe(true);
+      expect(
+        screen.getByRole("heading", { name: HORIZONS.next.title }),
+      ).toBeTruthy();
+
+      // Open quick recap directly without needing to visit every chapter first
       const openRecall = await agent.act({
         steps: [{ ref: RECALL.triggerLabel, action: "press" }],
       });
@@ -233,24 +248,18 @@ describe("HomeExperience", () => {
       IDENTITY.roleTag,
       IDENTITY.subheadline,
       ...IDENTITY.portraitQuips.flatMap((q) => [q.title, q.description]),
+      AXINDER_SPOTLIGHT.name,
+      AXINDER_SPOTLIGHT.tagline,
+      AXINDER_SPOTLIGHT.actionLabel,
       ...Object.values(HORIZONS).flatMap((entry) => [
         entry.tabLabel,
-        entry.stepLabel,
         entry.lead,
         ...entry.paragraphs.flatMap((p) =>
           p.map((seg) => (seg.type === "text" ? seg.value : seg.label)),
         ),
-        ...(entry.spotlight
-          ? [
-              entry.spotlight.name,
-              entry.spotlight.tagline,
-              entry.spotlight.actionLabel,
-            ]
-          : []),
       ]),
       ...Object.values(NOTES).flatMap((note) => [note.tag, note.body]),
       RECALL.triggerLabel,
-      RECALL.replayLabel,
       RECALL.description,
       ...RECALL.cards.flatMap((card) => [card.badge, card.prompt, card.answer]),
       RECALL.rememberedNote,

@@ -18,8 +18,9 @@ import {
   SegmentedControlItem,
 } from "@ui-sdk/react/segmented-control";
 import { toast } from "@ui-sdk/react/toast";
-import { useReducer, useRef } from "react";
+import { useReducer } from "react";
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   ArrowUpRightIcon,
   AxinderLogo,
@@ -36,12 +37,12 @@ import { InlineNote } from "@/components/inline-note";
 import {
   createInitialJourneyState,
   HORIZON_ORDER,
-  type HorizonId,
   reduceJourney,
   selectJourneyView,
 } from "@/lib/journey-machine";
 import { COLOR_SCHEME_OPTIONS, colorScheme } from "@/lib/preferences";
 import {
+  AXINDER_SPOTLIGHT,
   CONTROLS,
   HORIZONS,
   IDENTITY,
@@ -61,31 +62,15 @@ function LinkGlyph({ id }: { id: "axinder" | "github" | "x" }) {
   return <XIcon className="size-3.5" />;
 }
 
-function isHorizonId(value: string | null): value is HorizonId {
-  return value === "now" || value === "next" || value === "long-game";
-}
-
 export function HomeExperience() {
   const [state, dispatch] = useReducer(
     reduceJourney,
     undefined,
     createInitialJourneyState,
   );
-  const cardRef = useRef<HTMLElement>(null);
   const view = selectJourneyView(state);
   const scheme = usePreference(colorScheme);
   const activeEntry = HORIZONS[view.activeHorizon];
-  const nextHorizonEntry = view.nextUnvisitedHorizon
-    ? HORIZONS[view.nextUnvisitedHorizon]
-    : null;
-
-  function scrollCardTopIntoView() {
-    const el = cardRef.current;
-    if (!el) return;
-    if (el.getBoundingClientRect().top < 16) {
-      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  }
 
   function handlePortraitNudge() {
     const quip =
@@ -182,169 +167,145 @@ export function HomeExperience() {
             </p>
           </section>
 
-          {/* Horizon centerpiece with thumb-zone bottom navigation dock */}
+          {/* Chapter centerpiece with locked height across chapters */}
           <main className="mt-8 sm:mt-11">
-            <article
-              key={activeEntry.id}
-              ref={cardRef}
-              className="san-beat-panel rounded-2xl border border-[var(--rule)] bg-[var(--surface-elevated)] p-5 shadow-[0_1px_2px_oklch(0_0_0/0.04)] sm:p-7"
-            >
-              {/* Quiet top-of-card index + 3-part progress indicator */}
+            <article className="rounded-2xl border border-[var(--rule)] bg-[var(--surface-elevated)] p-5 shadow-[0_1px_2px_oklch(0_0_0/0.04)] sm:p-7">
+              {/* Chapter position + simple visual pips */}
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-mono text-xs font-medium tracking-[0.04em] text-[var(--primary)]">
-                  {activeEntry.indexLabel} / 03 · {activeEntry.tabLabel}
+                  {view.stepNumber} / {view.totalHorizons} ·{" "}
+                  {activeEntry.tabLabel}
                 </span>
 
-                <div className="flex items-center gap-2.5">
-                  <div aria-hidden="true" className="flex items-center gap-1">
-                    {HORIZON_ORDER.map((id) => {
-                      const visited = view.isHorizonVisited(id);
-                      const active = view.activeHorizon === id;
-                      return (
-                        <span
-                          key={id}
-                          className={
-                            active
-                              ? "h-1.5 w-5 rounded-full bg-[var(--primary)] transition-all duration-200"
-                              : visited
-                                ? "h-1.5 w-2.5 rounded-full bg-[var(--primary)]/50 transition-all duration-200"
-                                : "h-1.5 w-2 rounded-full bg-[var(--rule-strong)]/40 transition-all duration-200"
-                          }
-                        />
-                      );
-                    })}
-                  </div>
-                  <span className="font-mono text-[0.72rem] text-[var(--ink-muted)]">
-                    {view.visitedCount} / {view.totalHorizons}{" "}
-                    {CONTROLS.progressSuffix}
-                  </span>
-                </div>
-              </div>
-
-              <h2 className="mt-3 text-[1.35rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--ink)] sm:text-[1.5rem]">
-                {activeEntry.title}
-              </h2>
-              <p className="mt-2 text-[0.98rem] font-medium leading-[1.55] text-[var(--ink)]/90">
-                {activeEntry.lead}
-              </p>
-
-              <div className="mt-5 space-y-4 text-[1rem] leading-[1.7] text-[var(--ink-muted)]">
-                {activeEntry.paragraphs.map((paragraph, index) => (
-                  <div key={`${activeEntry.id}-${index}`}>
-                    {paragraph.map((segment, segIndex) =>
-                      segment.type === "text" ? (
-                        <span key={`${activeEntry.id}-${index}-${segIndex}`}>
-                          {segment.value}
-                        </span>
-                      ) : (
-                        <InlineNote
-                          key={segment.id}
-                          label={segment.label}
-                          noteId={segment.id}
-                          onOpenChange={(open) =>
-                            dispatch({
-                              type: "SET_NOTE_OPEN",
-                              note: segment.id,
-                              open,
-                            })
-                          }
-                          open={view.activeNote === segment.id}
-                          visited={view.openedNotes.includes(segment.id)}
-                        />
-                      ),
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {activeEntry.spotlight ? (
-                <div className="mt-6 flex flex-col gap-4 rounded-xl border border-[var(--rule)] bg-[var(--surface)] p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--rule)] bg-[var(--surface-elevated)]">
-                      <AxinderLogo className="size-6" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-[var(--ink)]">
-                        {activeEntry.spotlight.name}
-                      </p>
-                      <p className="text-[0.84rem] leading-snug text-[var(--ink-muted)]">
-                        {activeEntry.spotlight.tagline}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    className="san-pill-btn san-pill-tonal inline-flex shrink-0 items-center justify-center gap-1.5"
-                    render={(props) => (
-                      <a
-                        {...props}
-                        href={activeEntry.spotlight?.href}
-                        rel="noopener noreferrer"
-                        target="_blank"
-                      >
-                        {props.children}
-                      </a>
-                    )}
-                  >
-                    <span>{activeEntry.spotlight.actionLabel}</span>
-                    <ArrowUpRightIcon className="size-3.5" />
-                  </Button>
-                </div>
-              ) : null}
-
-              {/* Bottom thumb-zone navigation dock */}
-              <div className="mt-6 flex flex-col gap-3.5 border-t border-[var(--rule)] pt-5 sm:flex-row sm:items-center sm:justify-between">
-                <SegmentedControl
-                  aria-label={CONTROLS.horizonGroupLabel}
-                  className="w-full sm:w-auto"
-                  onValueChange={(next) => {
-                    if (isHorizonId(next)) {
-                      dispatch({ type: "SELECT_HORIZON", horizon: next });
-                      scrollCardTopIntoView();
-                    }
-                  }}
-                  value={view.activeHorizon}
-                >
-                  <SegmentedControlIndicator />
+                <div aria-hidden="true" className="flex items-center gap-1">
                   {HORIZON_ORDER.map((id) => {
-                    const entry = HORIZONS[id];
-                    const visited = view.isHorizonVisited(id);
                     const active = view.activeHorizon === id;
                     return (
-                      <SegmentedControlItem
+                      <span
                         key={id}
-                        className="h-8 gap-2 px-3 text-[0.82rem] sm:px-3.5"
-                        value={id}
-                      >
-                        <span>{entry.tabLabel}</span>
-                        <span
-                          aria-hidden="true"
-                          className={
-                            active
-                              ? "size-1.5 rounded-full bg-[var(--primary)]"
-                              : visited
-                                ? "size-1.5 rounded-full bg-[var(--primary)]/50"
-                                : "size-1.5 rounded-full bg-[var(--rule-strong)]/40"
-                          }
-                        />
-                      </SegmentedControlItem>
+                        className={
+                          active
+                            ? "h-1.5 w-5 rounded-full bg-[var(--primary)] transition-all duration-200"
+                            : "h-1.5 w-2 rounded-full bg-[var(--rule-strong)]/40 transition-all duration-200"
+                        }
+                      />
                     );
                   })}
-                </SegmentedControl>
+                </div>
+              </div>
 
-                {nextHorizonEntry ? (
+              {/* Zero-shift stack: invisible sizers reserve max chapter height */}
+              <div className="mt-3 grid">
+                {HORIZON_ORDER.map((id) => {
+                  const sizer = HORIZONS[id];
+                  return (
+                    <div
+                      key={id}
+                      aria-hidden="true"
+                      className="pointer-events-none invisible col-start-1 row-start-1 select-none"
+                    >
+                      <p className="text-[1.35rem] font-semibold leading-[1.25] tracking-[-0.02em] sm:text-[1.5rem]">
+                        {sizer.title}
+                      </p>
+                      <p className="mt-2 text-[0.98rem] font-medium leading-[1.55]">
+                        {sizer.lead}
+                      </p>
+                      <div className="mt-5 space-y-4 text-[1rem] leading-[1.7]">
+                        {sizer.paragraphs.map((paragraph) => {
+                          const paragraphKey = paragraph
+                            .map((s) => (s.type === "text" ? s.value : s.id))
+                            .join("|");
+                          return (
+                            <div key={`sizer-${id}-${paragraphKey}`}>
+                              {paragraph.map((segment) =>
+                                segment.type === "text" ? (
+                                  <span key={segment.value}>
+                                    {segment.value}
+                                  </span>
+                                ) : (
+                                  <span
+                                    key={segment.id}
+                                    className="-mx-[0.06em] inline px-[0.14em] font-[550]"
+                                  >
+                                    {segment.label}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                <div
+                  key={activeEntry.id}
+                  className="san-beat-panel col-start-1 row-start-1"
+                >
+                  <h2 className="text-[1.35rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--ink)] sm:text-[1.5rem]">
+                    {activeEntry.title}
+                  </h2>
+                  <p className="mt-2 text-[0.98rem] font-medium leading-[1.55] text-[var(--ink)]/90">
+                    {activeEntry.lead}
+                  </p>
+
+                  <div className="mt-5 space-y-4 text-[1rem] leading-[1.7] text-[var(--ink-muted)]">
+                    {activeEntry.paragraphs.map((paragraph, index) => (
+                      <div key={`${activeEntry.id}-${index}`}>
+                        {paragraph.map((segment, segIndex) =>
+                          segment.type === "text" ? (
+                            <span
+                              key={`${activeEntry.id}-${index}-${segIndex}`}
+                            >
+                              {segment.value}
+                            </span>
+                          ) : (
+                            <InlineNote
+                              key={segment.id}
+                              label={segment.label}
+                              noteId={segment.id}
+                              onOpenChange={(open) =>
+                                dispatch({
+                                  type: "SET_NOTE_OPEN",
+                                  note: segment.id,
+                                  open,
+                                })
+                              }
+                              open={view.activeNote === segment.id}
+                              visited={view.openedNotes.includes(segment.id)}
+                            />
+                          ),
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Chapter navigation: previous/next row above centered quick recap */}
+              <div className="mt-6 flex flex-col gap-3 border-t border-[var(--rule)] pt-5">
+                <div className="flex items-center justify-between gap-3">
                   <Button
-                    className="san-pill-btn san-pill-tonal inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
-                    onClick={() => {
-                      dispatch({ type: "STEP_NEXT_UNVISITED" });
-                      scrollCardTopIntoView();
-                    }}
+                    className="san-pill-btn san-pill-ghost inline-flex shrink-0 items-center justify-center gap-1.5"
+                    disabled={!view.canGoPrevious}
+                    onClick={() => dispatch({ type: "PREVIOUS_HORIZON" })}
                   >
-                    <span>
-                      {CONTROLS.nextPrefix} {nextHorizonEntry.stepLabel}
-                    </span>
+                    <ArrowLeftIcon className="size-3.5" />
+                    <span>{CONTROLS.previousChapterLabel}</span>
+                  </Button>
+
+                  <Button
+                    className={`san-pill-btn ${view.canGoNext ? "san-pill-tonal" : "san-pill-ghost"} inline-flex shrink-0 items-center justify-center gap-1.5`}
+                    disabled={!view.canGoNext}
+                    onClick={() => dispatch({ type: "NEXT_HORIZON" })}
+                  >
+                    <span>{CONTROLS.nextChapterLabel}</span>
                     <ArrowRightIcon className="size-3.5" />
                   </Button>
-                ) : (
+                </div>
+
+                <div className="flex justify-center">
                   <Dialog
                     onOpenChange={(open) => {
                       if (open) {
@@ -358,18 +319,14 @@ export function HomeExperience() {
                     presentation="auto"
                   >
                     <DialogTrigger
-                      className={
-                        view.isCompleted
-                          ? "san-pill-btn san-pill-ghost inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
-                          : "san-pill-btn san-pill-tonal inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
-                      }
+                      className={`san-pill-btn ${view.isLastHorizon && !view.isCompleted ? "san-pill-tonal" : "san-pill-ghost"} inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto sm:min-w-[13rem]`}
                     >
-                      <SparkIcon className="size-3.5" />
-                      <span>
-                        {view.isCompleted
-                          ? RECALL.replayLabel
-                          : RECALL.triggerLabel}
-                      </span>
+                      {view.isCompleted ? (
+                        <CheckIcon className="size-3.5" />
+                      ) : (
+                        <SparkIcon className="size-3.5" />
+                      )}
+                      <span>{RECALL.triggerLabel}</span>
                     </DialogTrigger>
 
                     <DialogBackdrop />
@@ -461,9 +418,42 @@ export function HomeExperience() {
                       </div>
                     </DialogContent>
                   </Dialog>
-                )}
+                </div>
               </div>
             </article>
+
+            {/* Steady axinder spotlight outside the chapter switcher */}
+            <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-[var(--rule)] bg-[var(--surface-elevated)] p-5 shadow-[0_1px_2px_oklch(0_0_0/0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-7">
+              <div className="flex items-center gap-3.5">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--rule)] bg-[var(--surface)]">
+                  <AxinderLogo className="size-6" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--ink)]">
+                    {AXINDER_SPOTLIGHT.name}
+                  </p>
+                  <p className="text-[0.84rem] leading-snug text-[var(--ink-muted)]">
+                    {AXINDER_SPOTLIGHT.tagline}
+                  </p>
+                </div>
+              </div>
+              <Button
+                className="san-pill-btn san-pill-tonal inline-flex shrink-0 items-center justify-center gap-1.5"
+                render={(props) => (
+                  <a
+                    {...props}
+                    href={AXINDER_SPOTLIGHT.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    {props.children}
+                  </a>
+                )}
+              >
+                <span>{AXINDER_SPOTLIGHT.actionLabel}</span>
+                <ArrowUpRightIcon className="size-3.5" />
+              </Button>
+            </div>
 
             {view.isCompleted ? (
               <p className="mt-4 text-center font-mono text-xs tracking-[0.04em] text-[var(--primary)]">
@@ -473,7 +463,7 @@ export function HomeExperience() {
           </main>
         </div>
 
-        {/* Minimal footer: Axinder, GitHub, X only */}
+        {/* Minimal footer: axinder, github, x only */}
         <footer className="mt-14 border-t border-[var(--rule)] pt-6">
           <nav
             aria-label="external links"

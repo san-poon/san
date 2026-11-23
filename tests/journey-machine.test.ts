@@ -7,60 +7,49 @@ import {
 } from "@/lib/journey-machine";
 
 describe("journey-machine", () => {
-  test("starts at now in exploring state with 1/3 visited", () => {
+  test("starts at chapter 1 (now) in idle state with previous disabled and next enabled", () => {
     const initial = createInitialJourneyState();
     const view = selectJourneyView(initial);
 
     expect(view.activeHorizon).toBe("now");
-    expect(view.visitedHorizons).toEqual(["now"]);
-    expect(view.visitedCount).toBe(1);
+    expect(view.activeIndex).toBe(0);
+    expect(view.stepNumber).toBe(1);
     expect(view.totalHorizons).toBe(HORIZON_ORDER.length);
-    expect(view.nextUnvisitedHorizon).toBe("next");
-    expect(view.recallKind).toBe("exploring");
+    expect(view.canGoPrevious).toBe(false);
+    expect(view.canGoNext).toBe(true);
+    expect(view.isLastHorizon).toBe(false);
+    expect(view.recallKind).toBe("idle");
     expect(view.isRecallOpen).toBe(false);
-    expect(view.canOpenRecall).toBe(false);
   });
 
-  test("unlocks recall only after all three horizons are visited in any order", () => {
+  test("NEXT_HORIZON and PREVIOUS_HORIZON step between chapters and clamp cleanly at bounds", () => {
     let state = createInitialJourneyState();
 
-    state = reduceJourney(state, {
-      type: "SELECT_HORIZON",
-      horizon: "long-game",
-    });
-    expect(state.visitedHorizons).toEqual(["now", "long-game"]);
-    expect(selectJourneyView(state).nextUnvisitedHorizon).toBe("next");
-    expect(state.recall.kind).toBe("exploring");
+    // Clamped at start
+    state = reduceJourney(state, { type: "PREVIOUS_HORIZON" });
+    expect(state.activeHorizon).toBe("now");
 
-    // Re-visiting an already visited horizon does not unlock early.
-    state = reduceJourney(state, { type: "SELECT_HORIZON", horizon: "now" });
-    expect(state.recall.kind).toBe("exploring");
-
-    // Visiting the third unique horizon transitions exploring -> unlocked.
-    state = reduceJourney(state, { type: "SELECT_HORIZON", horizon: "next" });
-    const view = selectJourneyView(state);
-    expect(view.visitedCount).toBe(3);
-    expect(view.nextUnvisitedHorizon).toBeNull();
-    expect(view.recallKind).toBe("unlocked");
-    expect(view.canOpenRecall).toBe(true);
-  });
-
-  test("STEP_NEXT_UNVISITED advances through remaining horizons then opens recall", () => {
-    let state = createInitialJourneyState();
-
-    state = reduceJourney(state, { type: "STEP_NEXT_UNVISITED" });
+    state = reduceJourney(state, { type: "NEXT_HORIZON" });
     expect(state.activeHorizon).toBe("next");
-    expect(state.recall.kind).toBe("exploring");
+    expect(selectJourneyView(state).stepNumber).toBe(2);
+    expect(selectJourneyView(state).canGoPrevious).toBe(true);
+    expect(selectJourneyView(state).canGoNext).toBe(true);
 
-    state = reduceJourney(state, { type: "STEP_NEXT_UNVISITED" });
+    state = reduceJourney(state, { type: "NEXT_HORIZON" });
     expect(state.activeHorizon).toBe("long-game");
-    expect(state.recall.kind).toBe("unlocked");
+    expect(selectJourneyView(state).stepNumber).toBe(3);
+    expect(selectJourneyView(state).canGoNext).toBe(false);
+    expect(selectJourneyView(state).isLastHorizon).toBe(true);
 
-    state = reduceJourney(state, { type: "STEP_NEXT_UNVISITED" });
-    expect(state.recall).toEqual({ kind: "recalling", revealed: [] });
+    // Clamped at end
+    state = reduceJourney(state, { type: "NEXT_HORIZON" });
+    expect(state.activeHorizon).toBe("long-game");
+
+    state = reduceJourney(state, { type: "PREVIOUS_HORIZON" });
+    expect(state.activeHorizon).toBe("next");
   });
 
-  test("ignores OPEN_RECALL while exploring and clears activeNote when switching horizon or opening recall", () => {
+  test("switching chapter or opening recall clears activeNote while preserving openedNotes history", () => {
     let state = createInitialJourneyState();
     state = reduceJourney(state, {
       type: "SET_NOTE_OPEN",
@@ -70,10 +59,6 @@ describe("journey-machine", () => {
     expect(state.activeNote).toBe("bad-software");
     expect(state.openedNotes).toEqual(["bad-software"]);
 
-    // Ignored while exploring.
-    state = reduceJourney(state, { type: "OPEN_RECALL" });
-    expect(state.recall.kind).toBe("exploring");
-
     // Closing a different note does not clear the open one.
     state = reduceJourney(state, {
       type: "SET_NOTE_OPEN",
@@ -82,29 +67,28 @@ describe("journey-machine", () => {
     });
     expect(state.activeNote).toBe("bad-software");
 
-    // Switching horizon clears activeNote while preserving openedNotes history.
-    state = reduceJourney(state, { type: "SELECT_HORIZON", horizon: "next" });
+    // NEXT_HORIZON clears activeNote while keeping openedNotes.
+    state = reduceJourney(state, { type: "NEXT_HORIZON" });
     expect(state.activeNote).toBeNull();
     expect(state.openedNotes).toEqual(["bad-software"]);
 
-    state = reduceJourney(state, {
-      type: "SELECT_HORIZON",
-      horizon: "long-game",
-    });
+    state = reduceJourney(state, { type: "PREVIOUS_HORIZON" });
     state = reduceJourney(state, {
       type: "SET_NOTE_OPEN",
-      note: "stagnation",
+      note: "bad-software",
       open: true,
     });
     state = reduceJourney(state, { type: "OPEN_RECALL" });
     expect(state.activeNote).toBeNull();
-    expect(state.recall).toEqual({ kind: "recalling", revealed: [] });
+    expect(state.recall).toEqual({
+      kind: "recalling",
+      returnTo: "idle",
+      revealed: [],
+    });
   });
 
-  test("recall cards transition recalling -> remembered -> recalling -> completed -> replay", () => {
+  test("recall works immediately from idle and preserves completed status on early close during replay", () => {
     let state = createInitialJourneyState();
-    state = reduceJourney(state, { type: "STEP_NEXT_UNVISITED" });
-    state = reduceJourney(state, { type: "STEP_NEXT_UNVISITED" });
     state = reduceJourney(state, { type: "OPEN_RECALL" });
 
     state = reduceJourney(state, {
@@ -117,12 +101,13 @@ describe("journey-machine", () => {
     });
     expect(state.recall).toEqual({
       kind: "recalling",
+      returnTo: "idle",
       revealed: ["now", "next"],
     });
 
-    // Closing mid-recall returns to unlocked.
+    // Closing mid-recall returns to idle.
     const closedEarly = reduceJourney(state, { type: "CLOSE_RECALL" });
-    expect(closedEarly.recall).toEqual({ kind: "unlocked" });
+    expect(closedEarly.recall).toEqual({ kind: "idle" });
 
     // Flipping the third card reaches remembered.
     state = reduceJourney(state, {
@@ -131,6 +116,7 @@ describe("journey-machine", () => {
     });
     expect(state.recall).toEqual({
       kind: "remembered",
+      returnTo: "idle",
       revealed: ["now", "next", "long-game"],
     });
     expect(selectJourneyView(state).isRemembered).toBe(true);
@@ -142,12 +128,17 @@ describe("journey-machine", () => {
     });
     expect(state.recall).toEqual({
       kind: "recalling",
+      returnTo: "idle",
       revealed: ["now", "long-game"],
     });
 
     // Reset clears revealed cards inside open recall.
     state = reduceJourney(state, { type: "RESET_RECALL" });
-    expect(state.recall).toEqual({ kind: "recalling", revealed: [] });
+    expect(state.recall).toEqual({
+      kind: "recalling",
+      returnTo: "idle",
+      revealed: [],
+    });
 
     // Re-reveal all three and close -> completed.
     for (const horizon of HORIZON_ORDER) {
@@ -156,11 +147,16 @@ describe("journey-machine", () => {
     state = reduceJourney(state, { type: "CLOSE_RECALL" });
     expect(state.recall).toEqual({ kind: "completed" });
     expect(selectJourneyView(state).isCompleted).toBe(true);
-    expect(selectJourneyView(state).canOpenRecall).toBe(true);
 
-    // Reopening from completed resets revealed cards cleanly.
+    // Reopening from completed and closing early keeps completed state.
     state = reduceJourney(state, { type: "OPEN_RECALL" });
-    expect(state.recall).toEqual({ kind: "recalling", revealed: [] });
+    expect(state.recall).toEqual({
+      kind: "recalling",
+      returnTo: "completed",
+      revealed: [],
+    });
+    state = reduceJourney(state, { type: "CLOSE_RECALL" });
+    expect(state.recall).toEqual({ kind: "completed" });
   });
 
   test("NUDGE_PORTRAIT increments nudge count", () => {

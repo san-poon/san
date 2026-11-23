@@ -6,18 +6,10 @@ export type CopySegment =
 
 export interface HorizonEntry {
   readonly id: HorizonId;
-  readonly indexLabel: string;
   readonly tabLabel: string;
-  readonly stepLabel: string;
   readonly title: string;
   readonly lead: string;
   readonly paragraphs: ReadonlyArray<ReadonlyArray<CopySegment>>;
-  readonly spotlight?: {
-    readonly name: string;
-    readonly tagline: string;
-    readonly actionLabel: string;
-    readonly href: string;
-  };
 }
 
 export interface NoteEntry {
@@ -75,12 +67,18 @@ export const IDENTITY = {
   ],
 } as const;
 
+export const AXINDER_SPOTLIGHT = {
+  name: "axinder",
+  tagline:
+    "a personal ai tutor shaped around how understanding actually sticks.",
+  actionLabel: "explore the tutor",
+  href: "https://www.axinder.com",
+} as const;
+
 export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
   now: {
     id: "now",
-    indexLabel: "01",
     tabLabel: "now",
-    stepLabel: "build intuition",
     title: "Build real intuition.",
     lead: "even before modern ai, i wanted learning software that felt calm, personal, and genuinely good to use.",
     paragraphs: [
@@ -118,19 +116,10 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
         },
       ],
     ],
-    spotlight: {
-      name: "axinder",
-      tagline:
-        "a personal ai tutor shaped around how understanding actually sticks.",
-      actionLabel: "explore the tutor",
-      href: "https://www.axinder.com",
-    },
   },
   next: {
     id: "next",
-    indexLabel: "02",
     tabLabel: "next",
-    stepLabel: "prove the work",
     title: "Prove the work, faster.",
     lead: "traditions endure until something unmistakably better earns trust.",
     paragraphs: [
@@ -161,9 +150,7 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
   },
   "long-game": {
     id: "long-game",
-    indexLabel: "03",
     tabLabel: "long game",
-    stepLabel: "keep exploring",
     title: "Keep exploring.",
     lead: "basic literacy and genuine drive should be enough to grasp almost anything.",
     paragraphs: [
@@ -219,8 +206,7 @@ export const NOTES: Readonly<Record<NoteId, NoteEntry>> = {
 };
 
 export const RECALL = {
-  triggerLabel: "see what stuck",
-  replayLabel: "revisit the arc",
+  triggerLabel: "quick recap",
   title: "Three ideas, in brief",
   description: "tap each card to reveal the thread behind what i'm building.",
   cards: [
@@ -276,11 +262,8 @@ export const LINKS: ReadonlyArray<SocialLink> = [
 export const CONTROLS = {
   portraitButtonLabel: "nudge san's portrait",
   themeGroupLabel: "color theme",
-  horizonGroupLabel: "horizon",
-  nextPrefix: "next:",
+  previousChapterLabel: "previous",
+  nextChapterLabel: "next",
   noteCloseLabel: "got it",
   toastDismissLabel: "dismiss notification",
-  progressSuffix: "read",
-  notesExploredSingular: "margin note",
-  notesExploredPlural: "margin notes",
 } as const;

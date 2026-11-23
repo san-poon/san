@@ -9,15 +9,21 @@ export type NoteId =
   | "stagnation";
 
 export type RecallState =
-  | { readonly kind: "exploring" }
-  | { readonly kind: "unlocked" }
-  | { readonly kind: "recalling"; readonly revealed: readonly HorizonId[] }
-  | { readonly kind: "remembered"; readonly revealed: readonly HorizonId[] }
+  | { readonly kind: "idle" }
+  | {
+      readonly kind: "recalling";
+      readonly returnTo: "idle" | "completed";
+      readonly revealed: readonly HorizonId[];
+    }
+  | {
+      readonly kind: "remembered";
+      readonly returnTo: "idle" | "completed";
+      readonly revealed: readonly HorizonId[];
+    }
   | { readonly kind: "completed" };
 
 export interface JourneyState {
   readonly activeHorizon: HorizonId;
-  readonly visitedHorizons: readonly HorizonId[];
   readonly openedNotes: readonly NoteId[];
   readonly activeNote: NoteId | null;
   readonly recall: RecallState;
@@ -26,7 +32,8 @@ export interface JourneyState {
 
 export type JourneyEvent =
   | { readonly type: "SELECT_HORIZON"; readonly horizon: HorizonId }
-  | { readonly type: "STEP_NEXT_UNVISITED" }
+  | { readonly type: "PREVIOUS_HORIZON" }
+  | { readonly type: "NEXT_HORIZON" }
   | {
       readonly type: "SET_NOTE_OPEN";
       readonly note: NoteId;
@@ -40,17 +47,17 @@ export type JourneyEvent =
 
 export interface JourneyView {
   readonly activeHorizon: HorizonId;
-  readonly visitedHorizons: readonly HorizonId[];
-  readonly visitedCount: number;
+  readonly activeIndex: number;
+  readonly stepNumber: number;
   readonly totalHorizons: number;
-  readonly isHorizonVisited: (horizon: HorizonId) => boolean;
-  readonly nextUnvisitedHorizon: HorizonId | null;
+  readonly canGoPrevious: boolean;
+  readonly canGoNext: boolean;
+  readonly isLastHorizon: boolean;
   readonly activeNote: NoteId | null;
   readonly openedNotes: readonly NoteId[];
   readonly openedNoteCount: number;
   readonly recallKind: RecallState["kind"];
   readonly isRecallOpen: boolean;
-  readonly canOpenRecall: boolean;
   readonly isRemembered: boolean;
   readonly isCompleted: boolean;
   readonly revealedCards: readonly HorizonId[];
@@ -77,10 +84,9 @@ function allHorizonsIncluded(list: readonly HorizonId[]): boolean {
 export function createInitialJourneyState(): JourneyState {
   return {
     activeHorizon: "now",
-    visitedHorizons: ["now"],
     openedNotes: [],
     activeNote: null,
-    recall: { kind: "exploring" },
+    recall: { kind: "idle" },
     portraitNudges: 0,
   };
 }
@@ -91,32 +97,31 @@ export function reduceJourney(
 ): JourneyState {
   switch (event.type) {
     case "SELECT_HORIZON": {
-      const visitedHorizons = appendUnique(
-        state.visitedHorizons,
-        event.horizon,
-      );
-      const recall: RecallState =
-        state.recall.kind === "exploring" &&
-        allHorizonsIncluded(visitedHorizons)
-          ? { kind: "unlocked" }
-          : state.recall;
       return {
         ...state,
         activeHorizon: event.horizon,
         activeNote: null,
-        visitedHorizons,
-        recall,
       };
     }
 
-    case "STEP_NEXT_UNVISITED": {
-      const next = HORIZON_ORDER.find(
-        (id) => !state.visitedHorizons.includes(id),
-      );
-      if (next) {
-        return reduceJourney(state, { type: "SELECT_HORIZON", horizon: next });
-      }
-      return reduceJourney(state, { type: "OPEN_RECALL" });
+    case "PREVIOUS_HORIZON": {
+      const currentIndex = HORIZON_ORDER.indexOf(state.activeHorizon);
+      const nextIndex = Math.max(0, currentIndex - 1);
+      return {
+        ...state,
+        activeHorizon: HORIZON_ORDER[nextIndex],
+        activeNote: null,
+      };
+    }
+
+    case "NEXT_HORIZON": {
+      const currentIndex = HORIZON_ORDER.indexOf(state.activeHorizon);
+      const nextIndex = Math.min(HORIZON_ORDER.length - 1, currentIndex + 1);
+      return {
+        ...state,
+        activeHorizon: HORIZON_ORDER[nextIndex],
+        activeNote: null,
+      };
     }
 
     case "SET_NOTE_OPEN": {
@@ -137,16 +142,17 @@ export function reduceJourney(
     }
 
     case "OPEN_RECALL": {
-      if (
-        state.recall.kind !== "unlocked" &&
-        state.recall.kind !== "completed"
-      ) {
+      if (state.recall.kind !== "idle" && state.recall.kind !== "completed") {
         return state;
       }
       return {
         ...state,
         activeNote: null,
-        recall: { kind: "recalling", revealed: [] },
+        recall: {
+          kind: "recalling",
+          returnTo: state.recall.kind,
+          revealed: [],
+        },
       };
     }
 
@@ -155,7 +161,7 @@ export function reduceJourney(
         return { ...state, recall: { kind: "completed" } };
       }
       if (state.recall.kind === "recalling") {
-        return { ...state, recall: { kind: "unlocked" } };
+        return { ...state, recall: { kind: state.recall.returnTo } };
       }
       return state;
     }
@@ -169,8 +175,16 @@ export function reduceJourney(
       }
       const revealed = toggleItem(state.recall.revealed, event.horizon);
       const recall: RecallState = allHorizonsIncluded(revealed)
-        ? { kind: "remembered", revealed }
-        : { kind: "recalling", revealed };
+        ? {
+            kind: "remembered",
+            returnTo: state.recall.returnTo,
+            revealed,
+          }
+        : {
+            kind: "recalling",
+            returnTo: state.recall.returnTo,
+            revealed,
+          };
       return { ...state, recall };
     }
 
@@ -183,7 +197,11 @@ export function reduceJourney(
       }
       return {
         ...state,
-        recall: { kind: "recalling", revealed: [] },
+        recall: {
+          kind: "recalling",
+          returnTo: state.recall.returnTo,
+          revealed: [],
+        },
       };
     }
 
@@ -202,8 +220,7 @@ export function reduceJourney(
 }
 
 export function selectJourneyView(state: JourneyState): JourneyView {
-  const nextUnvisitedHorizon =
-    HORIZON_ORDER.find((id) => !state.visitedHorizons.includes(id)) ?? null;
+  const activeIndex = HORIZON_ORDER.indexOf(state.activeHorizon);
   const isRecallOpen =
     state.recall.kind === "recalling" || state.recall.kind === "remembered";
   const revealedCards =
@@ -213,18 +230,17 @@ export function selectJourneyView(state: JourneyState): JourneyView {
 
   return {
     activeHorizon: state.activeHorizon,
-    visitedHorizons: state.visitedHorizons,
-    visitedCount: state.visitedHorizons.length,
+    activeIndex,
+    stepNumber: activeIndex + 1,
     totalHorizons: HORIZON_ORDER.length,
-    isHorizonVisited: (horizon) => state.visitedHorizons.includes(horizon),
-    nextUnvisitedHorizon,
+    canGoPrevious: activeIndex > 0,
+    canGoNext: activeIndex < HORIZON_ORDER.length - 1,
+    isLastHorizon: activeIndex === HORIZON_ORDER.length - 1,
     activeNote: state.activeNote,
     openedNotes: state.openedNotes,
     openedNoteCount: state.openedNotes.length,
     recallKind: state.recall.kind,
     isRecallOpen,
-    canOpenRecall:
-      state.recall.kind === "unlocked" || state.recall.kind === "completed",
     isRemembered: state.recall.kind === "remembered",
     isCompleted: state.recall.kind === "completed",
     revealedCards,
