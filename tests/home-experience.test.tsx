@@ -12,7 +12,7 @@ import {
 import { describe, expect, test } from "vitest";
 import { HomeExperience } from "@/components/home-experience";
 import { CloseIcon } from "@/components/icons";
-import { colorScheme } from "@/lib/preferences";
+import { COLOR_SCHEME_OPTIONS, colorScheme } from "@/lib/preferences";
 import {
   CONTROLS,
   HORIZONS,
@@ -20,6 +20,7 @@ import {
   LINKS,
   NOTES,
   RECALL,
+  SITE_META,
 } from "@/lib/site-content";
 
 const agent = createAgent({ allow: () => true });
@@ -90,11 +91,11 @@ describe("HomeExperience", () => {
         CONTROLS.horizonGroupLabel,
         "the craft of the experience",
         "lasting leverage",
-        "Explore the tutor",
+        "explore the tutor",
         `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
-        "Axinder",
-        "GitHub",
-        "X",
+        "axinder",
+        "github",
+        "x",
       ]) {
         expect(labels, `Missing control ${expected}`).toContain(expected);
       }
@@ -102,13 +103,13 @@ describe("HomeExperience", () => {
       const webMcpSnapshot = await tools.get("snapshot")?.execute({});
       expect(Array.isArray(webMcpSnapshot)).toBe(true);
 
-      // Drive Color theme and Horizon via agent.act()
+      // Drive color theme and horizon via agent.act()
       const stepResult = await agent.act({
         steps: [
           {
             ref: CONTROLS.themeGroupLabel,
             action: "setValue",
-            args: ["Dark"],
+            args: ["dark"],
           },
           {
             ref: `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
@@ -176,7 +177,7 @@ describe("HomeExperience", () => {
       </TestShell>,
     );
 
-    // Only Axinder, GitHub, and X links exist — no email, no /blog.
+    // Only axinder, github, and x links exist; no email, no /blog.
     const anchors = screen.getAllByRole("link");
     const hrefs = anchors.map((anchor) => anchor.getAttribute("href"));
     expect(hrefs).toContain("https://www.axinder.com");
@@ -214,5 +215,60 @@ describe("HomeExperience", () => {
       screen.getByRole("button", { name: "the craft of the experience" }),
     );
     expect(screen.getByText(NOTES["bad-software"].title)).toBeTruthy();
+  });
+
+  test("copy contains zero em dashes and keeps non-heading strings lowercase", () => {
+    const headingStrings = new Set<string>([
+      IDENTITY.headline,
+      ...Object.values(HORIZONS).map((entry) => entry.title),
+      ...Object.values(NOTES).map((entry) => entry.title),
+      RECALL.title,
+    ]);
+
+    const nonHeadingStrings: string[] = [
+      SITE_META.title,
+      SITE_META.description,
+      IDENTITY.name,
+      IDENTITY.shortName,
+      IDENTITY.roleTag,
+      IDENTITY.subheadline,
+      ...IDENTITY.portraitQuips.flatMap((q) => [q.title, q.description]),
+      ...Object.values(HORIZONS).flatMap((entry) => [
+        entry.tabLabel,
+        entry.stepLabel,
+        entry.lead,
+        ...entry.paragraphs.flatMap((p) =>
+          p.map((seg) => (seg.type === "text" ? seg.value : seg.label)),
+        ),
+        ...(entry.spotlight
+          ? [
+              entry.spotlight.name,
+              entry.spotlight.tagline,
+              entry.spotlight.actionLabel,
+            ]
+          : []),
+      ]),
+      ...Object.values(NOTES).flatMap((note) => [note.tag, note.body]),
+      RECALL.triggerLabel,
+      RECALL.replayLabel,
+      RECALL.description,
+      ...RECALL.cards.flatMap((card) => [card.badge, card.prompt, card.answer]),
+      RECALL.rememberedNote,
+      RECALL.completedEcho,
+      RECALL.resetLabel,
+      RECALL.closeLabel,
+      ...LINKS.flatMap((link) => [link.label, link.hint]),
+      ...Object.values(CONTROLS),
+      ...COLOR_SCHEME_OPTIONS.map((opt) => opt.label),
+    ];
+
+    for (const heading of headingStrings) {
+      expect(heading.includes("\u2014")).toBe(false);
+    }
+
+    for (const text of nonHeadingStrings) {
+      expect(text.includes("\u2014"), `Found em dash in: ${text}`).toBe(false);
+      expect(text, `Expected lowercase: ${text}`).toBe(text.toLowerCase());
+    }
   });
 });

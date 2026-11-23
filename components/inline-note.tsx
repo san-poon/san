@@ -50,7 +50,7 @@ export function InlineNote({
           aria-hidden="true"
           className="mx-auto mb-1 hidden h-1 w-9 rounded-full bg-[var(--rule-strong)]/50 in-data-[presentation=sheet]:block"
         />
-        <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[var(--primary)]">
+        <span className="font-mono text-[0.7rem] font-medium tracking-[0.04em] text-[var(--primary)]">
           {note.tag}
         </span>
         <PopoverTitle className="text-[0.95rem] font-semibold tracking-[-0.01em] text-[var(--ink)]">

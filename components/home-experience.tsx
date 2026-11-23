@@ -133,7 +133,7 @@ export function HomeExperience() {
                       className="flex size-full items-center justify-center bg-[var(--primary-container)] text-xs font-semibold text-[var(--on-primary-container)]"
                       delay={250}
                     >
-                      SP
+                      sp
                     </AvatarFallback>
                   </Avatar>
                 </span>
@@ -191,7 +191,7 @@ export function HomeExperience() {
             >
               {/* Quiet top-of-card index + 3-part progress indicator */}
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[var(--primary)]">
+                <span className="font-mono text-xs font-medium tracking-[0.04em] text-[var(--primary)]">
                   {activeEntry.indexLabel} / 03 · {activeEntry.tabLabel}
                 </span>
 
@@ -380,7 +380,7 @@ export function HomeExperience() {
                       />
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[var(--primary)]">
+                          <span className="font-mono text-[0.7rem] font-medium tracking-[0.04em] text-[var(--primary)]">
                             {view.revealedCount} / {RECALL.cards.length}
                           </span>
                           <DialogTitle className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
@@ -391,7 +391,7 @@ export function HomeExperience() {
                           </DialogDescription>
                         </div>
                         <DialogClose
-                          aria-label="Close recall"
+                          aria-label="close recall"
                           className="san-unstyled-btn inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--rule)] text-[var(--ink-muted)] hover:bg-[var(--surface-container)] hover:text-[var(--ink)]"
                         >
                           <CloseIcon className="size-4" />
@@ -420,7 +420,7 @@ export function HomeExperience() {
                                 aria-hidden="true"
                                 className="flex w-full items-center justify-between gap-2 text-xs font-medium text-[var(--primary)]"
                               >
-                                <span className="font-mono uppercase tracking-[0.1em]">
+                                <span className="font-mono tracking-[0.04em]">
                                   {card.badge}
                                 </span>
                                 {revealed ? (
@@ -432,7 +432,7 @@ export function HomeExperience() {
                               </span>
                               {revealed ? (
                                 <span className="text-[0.875rem] leading-relaxed text-[var(--ink-muted)]">
-                                  <span className="sr-only"> — </span>
+                                  <span className="sr-only">: </span>
                                   {card.answer}
                                 </span>
                               ) : null}
@@ -476,7 +476,7 @@ export function HomeExperience() {
         {/* Minimal footer: Axinder, GitHub, X only */}
         <footer className="mt-14 border-t border-[var(--rule)] pt-6">
           <nav
-            aria-label="External links"
+            aria-label="external links"
             className="flex flex-wrap items-center justify-between gap-3"
           >
             <div className="flex flex-wrap items-center gap-2.5">

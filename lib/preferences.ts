@@ -13,7 +13,7 @@ export const COLOR_SCHEME_OPTIONS: ReadonlyArray<{
   value: ColorSchemeValue;
   label: string;
 }> = [
-  { value: "light", label: "Light" },
-  { value: "system", label: "Auto" },
-  { value: "dark", label: "Dark" },
+  { value: "light", label: "light" },
+  { value: "system", label: "auto" },
+  { value: "dark", label: "dark" },
 ];
