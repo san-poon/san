@@ -18,7 +18,7 @@ import {
   SegmentedControlItem,
 } from "@ui-sdk/react/segmented-control";
 import { toast } from "@ui-sdk/react/toast";
-import { useReducer } from "react";
+import { useReducer, useRef } from "react";
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -71,6 +71,7 @@ export function HomeExperience() {
     undefined,
     createInitialJourneyState,
   );
+  const cardRef = useRef<HTMLElement>(null);
   const view = selectJourneyView(state);
   const scheme = usePreference(colorScheme);
   const activeEntry = HORIZONS[view.activeHorizon];
@@ -78,13 +79,25 @@ export function HomeExperience() {
     ? HORIZONS[view.nextUnvisitedHorizon]
     : null;
 
+  function scrollCardTopIntoView() {
+    const el = cardRef.current;
+    if (!el) return;
+    if (el.getBoundingClientRect().top < 16) {
+      el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }
+
   function handlePortraitNudge() {
     const quip =
       IDENTITY.portraitQuips[
         view.portraitNudges % IDENTITY.portraitQuips.length
       ];
     dispatch({ type: "NUDGE_PORTRAIT" });
-    toast(quip.title, { description: quip.description });
+    toast.dismiss();
+    toast(quip.title, {
+      description: quip.description,
+      duration: 4500,
+    });
   }
 
   return (
@@ -109,7 +122,7 @@ export function HomeExperience() {
                 >
                   <Avatar
                     aria-hidden="true"
-                    className="size-11 overflow-hidden rounded-full ring-2 ring-[var(--spruce)]/30 transition-transform duration-200 group-hover:scale-105 group-hover:ring-[var(--spruce)] sm:size-12"
+                    className="size-11 overflow-hidden rounded-full ring-2 ring-[var(--primary)]/28 transition-transform duration-200 group-hover:scale-105 group-hover:ring-[var(--primary)] sm:size-12"
                   >
                     <AvatarImage
                       alt=""
@@ -117,7 +130,7 @@ export function HomeExperience() {
                       src={IDENTITY.avatarSrc}
                     />
                     <AvatarFallback
-                      className="flex size-full items-center justify-center bg-[var(--spruce-soft)] text-xs font-semibold text-[var(--spruce)]"
+                      className="flex size-full items-center justify-center bg-[var(--primary-container)] text-xs font-semibold text-[var(--on-primary-container)]"
                       delay={250}
                     >
                       SP
@@ -160,78 +173,55 @@ export function HomeExperience() {
           </header>
 
           {/* Opening editorial thesis */}
-          <section className="mt-10 sm:mt-14">
-            <h1 className="text-[1.85rem] font-semibold leading-[1.15] tracking-[-0.03em] text-[var(--ink)] sm:text-[2.35rem]">
+          <section className="mt-9 sm:mt-13">
+            <h1 className="text-[1.85rem] font-semibold leading-[1.15] tracking-[-0.03em] text-[var(--ink)] sm:text-[2.3rem]">
               {IDENTITY.headline}
             </h1>
-            <p className="mt-4 max-w-[34rem] text-[1.05rem] leading-[1.65] text-[var(--ink-muted)] sm:text-[1.1rem]">
+            <p className="mt-4 max-w-[34rem] text-[1.03rem] leading-[1.65] text-[var(--ink-muted)] sm:text-[1.08rem]">
               {IDENTITY.subheadline}
             </p>
           </section>
 
-          {/* Horizon centerpiece */}
-          <main className="mt-10 sm:mt-12">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <SegmentedControl
-                aria-label={CONTROLS.horizonGroupLabel}
-                onValueChange={(next) => {
-                  if (isHorizonId(next)) {
-                    dispatch({ type: "SELECT_HORIZON", horizon: next });
-                  }
-                }}
-                value={view.activeHorizon}
-              >
-                <SegmentedControlIndicator />
-                {HORIZON_ORDER.map((id) => {
-                  const entry = HORIZONS[id];
-                  const visited = view.isHorizonVisited(id);
-                  const active = view.activeHorizon === id;
-                  return (
-                    <SegmentedControlItem
-                      key={id}
-                      className="h-8 gap-2 px-3.5 text-[0.84rem]"
-                      value={id}
-                    >
-                      <span>{entry.tabLabel}</span>
-                      <span
-                        aria-hidden="true"
-                        className={
-                          active
-                            ? "size-1.5 rounded-full bg-[var(--amber)]"
-                            : visited
-                              ? "size-1.5 rounded-full bg-[var(--spruce)]"
-                              : "size-1.5 rounded-full bg-[var(--rule-strong)]/45"
-                        }
-                      />
-                    </SegmentedControlItem>
-                  );
-                })}
-              </SegmentedControl>
-
-              <span className="font-mono text-xs text-[var(--ink-muted)]">
-                {view.visitedCount} / {view.totalHorizons}{" "}
-                {CONTROLS.progressSuffix}
-                {view.openedNoteCount > 0
-                  ? ` · ${view.openedNoteCount} ${
-                      view.openedNoteCount === 1
-                        ? CONTROLS.notesExploredSingular
-                        : CONTROLS.notesExploredPlural
-                    }`
-                  : ""}
-              </span>
-            </div>
-
+          {/* Horizon centerpiece with thumb-zone bottom navigation dock */}
+          <main className="mt-8 sm:mt-11">
             <article
               key={activeEntry.id}
-              className="san-beat-panel mt-6 rounded-2xl border border-[var(--rule)] bg-[var(--paper-surface)] p-5 shadow-[0_1px_2px_oklch(0_0_0/0.04)] sm:p-7"
+              ref={cardRef}
+              className="san-beat-panel rounded-2xl border border-[var(--rule)] bg-[var(--surface-elevated)] p-5 shadow-[0_1px_2px_oklch(0_0_0/0.04)] sm:p-7"
             >
-              <div className="flex items-center gap-2.5">
-                <span className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[var(--spruce)]">
-                  {activeEntry.indexLabel} · {activeEntry.tabLabel}
+              {/* Quiet top-of-card index + 3-part progress indicator */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="font-mono text-xs font-medium uppercase tracking-[0.12em] text-[var(--primary)]">
+                  {activeEntry.indexLabel} / 03 · {activeEntry.tabLabel}
                 </span>
+
+                <div className="flex items-center gap-2.5">
+                  <div aria-hidden="true" className="flex items-center gap-1">
+                    {HORIZON_ORDER.map((id) => {
+                      const visited = view.isHorizonVisited(id);
+                      const active = view.activeHorizon === id;
+                      return (
+                        <span
+                          key={id}
+                          className={
+                            active
+                              ? "h-1.5 w-5 rounded-full bg-[var(--primary)] transition-all duration-200"
+                              : visited
+                                ? "h-1.5 w-2.5 rounded-full bg-[var(--primary)]/50 transition-all duration-200"
+                                : "h-1.5 w-2 rounded-full bg-[var(--rule-strong)]/40 transition-all duration-200"
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                  <span className="font-mono text-[0.72rem] text-[var(--ink-muted)]">
+                    {view.visitedCount} / {view.totalHorizons}{" "}
+                    {CONTROLS.progressSuffix}
+                  </span>
+                </div>
               </div>
 
-              <h2 className="mt-2.5 text-[1.35rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--ink)] sm:text-[1.5rem]">
+              <h2 className="mt-3 text-[1.35rem] font-semibold leading-[1.25] tracking-[-0.02em] text-[var(--ink)] sm:text-[1.5rem]">
                 {activeEntry.title}
               </h2>
               <p className="mt-2 text-[0.98rem] font-medium leading-[1.55] text-[var(--ink)]/90">
@@ -268,9 +258,9 @@ export function HomeExperience() {
               </div>
 
               {activeEntry.spotlight ? (
-                <div className="mt-6 flex flex-col gap-4 rounded-xl border border-[var(--rule)] bg-[var(--paper)] p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="mt-6 flex flex-col gap-4 rounded-xl border border-[var(--rule)] bg-[var(--surface)] p-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3.5">
-                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--rule)] bg-[var(--paper-surface)]">
+                    <div className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-[var(--rule)] bg-[var(--surface-elevated)]">
                       <AxinderLogo className="size-6" />
                     </div>
                     <div>
@@ -283,7 +273,7 @@ export function HomeExperience() {
                     </div>
                   </div>
                   <Button
-                    className="san-pill-btn san-pill-primary inline-flex shrink-0 items-center justify-center gap-1.5"
+                    className="san-pill-btn san-pill-tonal inline-flex shrink-0 items-center justify-center gap-1.5"
                     render={(props) => (
                       <a
                         {...props}
@@ -301,34 +291,56 @@ export function HomeExperience() {
                 </div>
               ) : null}
 
-              {/* Beat progression + unlockable recall trigger */}
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--rule)] pt-4">
-                <div aria-hidden="true" className="flex items-center gap-1.5">
+              {/* Bottom thumb-zone navigation dock */}
+              <div className="mt-6 flex flex-col gap-3.5 border-t border-[var(--rule)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+                <SegmentedControl
+                  aria-label={CONTROLS.horizonGroupLabel}
+                  className="w-full sm:w-auto"
+                  onValueChange={(next) => {
+                    if (isHorizonId(next)) {
+                      dispatch({ type: "SELECT_HORIZON", horizon: next });
+                      scrollCardTopIntoView();
+                    }
+                  }}
+                  value={view.activeHorizon}
+                >
+                  <SegmentedControlIndicator />
                   {HORIZON_ORDER.map((id) => {
+                    const entry = HORIZONS[id];
                     const visited = view.isHorizonVisited(id);
                     const active = view.activeHorizon === id;
                     return (
-                      <span
+                      <SegmentedControlItem
                         key={id}
-                        className={
-                          active
-                            ? "h-1.5 w-6 rounded-full bg-[var(--amber)] transition-all duration-200"
-                            : visited
-                              ? "h-1.5 w-3.5 rounded-full bg-[var(--spruce)] transition-all duration-200"
-                              : "h-1.5 w-2 rounded-full bg-[var(--rule-strong)]/40 transition-all duration-200"
-                        }
-                      />
+                        className="h-8 gap-2 px-3 text-[0.82rem] sm:px-3.5"
+                        value={id}
+                      >
+                        <span>{entry.tabLabel}</span>
+                        <span
+                          aria-hidden="true"
+                          className={
+                            active
+                              ? "size-1.5 rounded-full bg-[var(--primary)]"
+                              : visited
+                                ? "size-1.5 rounded-full bg-[var(--primary)]/50"
+                                : "size-1.5 rounded-full bg-[var(--rule-strong)]/40"
+                          }
+                        />
+                      </SegmentedControlItem>
                     );
                   })}
-                </div>
+                </SegmentedControl>
 
                 {nextHorizonEntry ? (
                   <Button
-                    className="san-pill-btn san-pill-ghost inline-flex items-center gap-1.5"
-                    onClick={() => dispatch({ type: "STEP_NEXT_UNVISITED" })}
+                    className="san-pill-btn san-pill-tonal inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
+                    onClick={() => {
+                      dispatch({ type: "STEP_NEXT_UNVISITED" });
+                      scrollCardTopIntoView();
+                    }}
                   >
                     <span>
-                      {CONTROLS.continuePrefix} {nextHorizonEntry.tabLabel}
+                      {CONTROLS.nextPrefix} {nextHorizonEntry.stepLabel}
                     </span>
                     <ArrowRightIcon className="size-3.5" />
                   </Button>
@@ -338,7 +350,9 @@ export function HomeExperience() {
                       if (open) {
                         toast.dismiss();
                       }
-                      dispatch({ type: open ? "OPEN_RECALL" : "CLOSE_RECALL" });
+                      dispatch({
+                        type: open ? "OPEN_RECALL" : "CLOSE_RECALL",
+                      });
                     }}
                     open={view.isRecallOpen}
                     presentation="auto"
@@ -346,8 +360,8 @@ export function HomeExperience() {
                     <DialogTrigger
                       className={
                         view.isCompleted
-                          ? "san-pill-btn san-pill-ghost inline-flex items-center gap-1.5"
-                          : "san-pill-btn san-pill-amber inline-flex items-center gap-1.5"
+                          ? "san-pill-btn san-pill-ghost inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
+                          : "san-pill-btn san-pill-tonal inline-flex w-full shrink-0 items-center justify-center gap-1.5 sm:w-auto"
                       }
                     >
                       <SparkIcon className="size-3.5" />
@@ -366,7 +380,7 @@ export function HomeExperience() {
                       />
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[var(--amber)]">
+                          <span className="font-mono text-[0.7rem] font-medium uppercase tracking-[0.12em] text-[var(--primary)]">
                             {view.revealedCount} / {RECALL.cards.length}
                           </span>
                           <DialogTitle className="mt-1 text-xl font-semibold tracking-[-0.02em] text-[var(--ink)]">
@@ -378,7 +392,7 @@ export function HomeExperience() {
                         </div>
                         <DialogClose
                           aria-label="Close recall"
-                          className="san-unstyled-btn inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--rule)] text-[var(--ink-muted)] hover:bg-[var(--paper-muted)] hover:text-[var(--ink)]"
+                          className="san-unstyled-btn inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[var(--rule)] text-[var(--ink-muted)] hover:bg-[var(--surface-container)] hover:text-[var(--ink)]"
                         >
                           <CloseIcon className="size-4" />
                         </DialogClose>
@@ -404,13 +418,13 @@ export function HomeExperience() {
                             >
                               <span
                                 aria-hidden="true"
-                                className="flex w-full items-center justify-between gap-2 text-xs font-medium text-[var(--spruce)]"
+                                className="flex w-full items-center justify-between gap-2 text-xs font-medium text-[var(--primary)]"
                               >
                                 <span className="font-mono uppercase tracking-[0.1em]">
                                   {card.badge}
                                 </span>
                                 {revealed ? (
-                                  <CheckIcon className="size-3.5 text-[var(--spruce)]" />
+                                  <CheckIcon className="size-3.5 text-[var(--primary)]" />
                                 ) : null}
                               </span>
                               <span className="text-[0.95rem] font-semibold text-[var(--ink)]">
@@ -428,7 +442,7 @@ export function HomeExperience() {
                       </div>
 
                       {view.isRemembered ? (
-                        <p className="rounded-xl border border-[var(--spruce)]/30 bg-[var(--spruce-soft)] px-3.5 py-2.5 text-sm font-medium text-[var(--ink)]">
+                        <p className="rounded-xl border border-[var(--primary)]/25 bg-[var(--primary-container)] px-3.5 py-2.5 text-sm font-medium text-[var(--on-primary-container)]">
                           {RECALL.rememberedNote}
                         </p>
                       ) : null}
@@ -441,7 +455,7 @@ export function HomeExperience() {
                         >
                           {RECALL.resetLabel}
                         </Button>
-                        <DialogClose className="san-pill-btn san-pill-primary">
+                        <DialogClose className="san-pill-btn san-pill-tonal">
                           {RECALL.closeLabel}
                         </DialogClose>
                       </div>
@@ -452,7 +466,7 @@ export function HomeExperience() {
             </article>
 
             {view.isCompleted ? (
-              <p className="mt-4 text-center font-mono text-xs tracking-[0.04em] text-[var(--spruce)]">
+              <p className="mt-4 text-center font-mono text-xs tracking-[0.04em] text-[var(--primary)]">
                 {RECALL.completedEcho}
               </p>
             ) : null}
@@ -469,7 +483,7 @@ export function HomeExperience() {
               {LINKS.map((link) => (
                 <Button
                   key={link.id}
-                  className="san-pill-btn san-pill-ghost inline-flex items-center gap-2"
+                  className="san-pill-btn san-link-pill inline-flex items-center gap-2"
                   render={(props) => (
                     <a
                       {...props}

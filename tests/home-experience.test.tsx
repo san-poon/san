@@ -4,12 +4,14 @@ import { createAgent, registerTools } from "@ui-sdk/react/agent";
 import { Preferences } from "@ui-sdk/react/preferences";
 import {
   Toast,
+  ToastClose,
   ToastDescription,
   ToastRegion,
   ToastTitle,
 } from "@ui-sdk/react/toast";
 import { describe, expect, test } from "vitest";
 import { HomeExperience } from "@/components/home-experience";
+import { CloseIcon } from "@/components/icons";
 import { colorScheme } from "@/lib/preferences";
 import {
   CONTROLS,
@@ -26,11 +28,21 @@ function TestShell({ children }: { children: React.ReactNode }) {
   return (
     <Preferences preferences={[colorScheme]}>
       {children}
-      <ToastRegion align="center" data-agent-hidden side="bottom">
+      <ToastRegion
+        align="center"
+        data-agent-hidden
+        maxVisible={1}
+        side="bottom"
+      >
         {() => (
-          <Toast>
-            <ToastTitle />
-            <ToastDescription />
+          <Toast className="items-start justify-between gap-3">
+            <div className="min-w-0 flex-1 space-y-0.5">
+              <ToastTitle />
+              <ToastDescription />
+            </div>
+            <ToastClose aria-label={CONTROLS.toastDismissLabel}>
+              <CloseIcon className="size-3.5" />
+            </ToastClose>
           </Toast>
         )}
       </ToastRegion>
@@ -76,10 +88,10 @@ describe("HomeExperience", () => {
         CONTROLS.portraitButtonLabel,
         CONTROLS.themeGroupLabel,
         CONTROLS.horizonGroupLabel,
-        "ugly, slow, paywalled apps",
-        "building real leverage",
-        "Try a lesson",
-        `${CONTROLS.continuePrefix} ${HORIZONS.next.tabLabel}`,
+        "the craft of the experience",
+        "lasting leverage",
+        "Explore the tutor",
+        `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
         "Axinder",
         "GitHub",
         "X",
@@ -99,7 +111,7 @@ describe("HomeExperience", () => {
             args: ["Dark"],
           },
           {
-            ref: `${CONTROLS.continuePrefix} ${HORIZONS.next.tabLabel}`,
+            ref: `${CONTROLS.nextPrefix} ${HORIZONS.next.stepLabel}`,
             action: "press",
           },
         ],
@@ -156,7 +168,7 @@ describe("HomeExperience", () => {
     }
   });
 
-  test("user clicks portrait, opens margin notes, and checks minimal links", async () => {
+  test("user clicks portrait (single dismissable toast), opens margin notes, and checks minimal links", async () => {
     const user = userEvent.setup();
     render(
       <TestShell>
@@ -174,17 +186,32 @@ describe("HomeExperience", () => {
     expect(hrefs.some((href) => href?.includes("/blog"))).toBe(false);
     expect(LINKS).toHaveLength(3);
 
-    // Portrait nudge triggers a toast
-    await user.click(
-      screen.getByRole("button", { name: CONTROLS.portraitButtonLabel }),
-    );
+    // Portrait nudge triggers one toast at a time; tapping again replaces it cleanly
+    const portraitBtn = screen.getByRole("button", {
+      name: CONTROLS.portraitButtonLabel,
+    });
+    await user.click(portraitBtn);
     await waitFor(() => {
       expect(screen.getByText(IDENTITY.portraitQuips[0].title)).toBeTruthy();
     });
 
+    await user.click(portraitBtn);
+    await waitFor(() => {
+      expect(screen.getByText(IDENTITY.portraitQuips[1].title)).toBeTruthy();
+      expect(screen.queryByText(IDENTITY.portraitQuips[0].title)).toBeNull();
+    });
+
+    // Toast close button dismisses the toast explicitly
+    await user.click(
+      screen.getByRole("button", { name: CONTROLS.toastDismissLabel }),
+    );
+    await waitFor(() => {
+      expect(screen.queryByText(IDENTITY.portraitQuips[1].title)).toBeNull();
+    });
+
     // Inline note opens cleanly
     await user.click(
-      screen.getByRole("button", { name: "ugly, slow, paywalled apps" }),
+      screen.getByRole("button", { name: "the craft of the experience" }),
     );
     expect(screen.getByText(NOTES["bad-software"].title)).toBeTruthy();
   });

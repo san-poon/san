@@ -8,6 +8,7 @@ export interface HorizonEntry {
   readonly id: HorizonId;
   readonly indexLabel: string;
   readonly tabLabel: string;
+  readonly stepLabel: string;
   readonly title: string;
   readonly lead: string;
   readonly paragraphs: ReadonlyArray<ReadonlyArray<CopySegment>>;
@@ -42,7 +43,7 @@ export interface SocialLink {
 export const SITE_META = {
   title: "San Poon",
   description:
-    "San Poon builds Axinder: learning tools for real intuition, fast proof of work, and keeping humans thinking.",
+    "Building learning tools for deep intuition, credible proof of mastery, and human curiosity — starting with Axinder.",
   url: "https://sanpoon.com",
 } as const;
 
@@ -51,26 +52,25 @@ export const IDENTITY = {
   shortName: "San",
   roleTag: "Building Axinder",
   avatarSrc: "/san-poon-global-profile.jpg",
-  headline: "AI has the answers. Understanding is still our job.",
+  headline: "AI can answer almost anything. Understanding is still ours.",
   subheadline:
-    "I build fast, personal learning tools for real intuition and provable skill — so AI makes us sharper, not softer.",
+    "I build quiet, personal learning tools for real intuition and credible skill — so smarter machines make people sharper, not passive.",
   portraitQuips: [
     {
-      title: "This page is short on purpose",
-      description:
-        "Tap the underlined bits. Each one hides an unfiltered note.",
+      title: "Look closely",
+      description: "The underlined phrases open small notes behind the idea.",
     },
     {
-      title: "No degrees harmed on this page",
-      description: "Paper is cheap. Proof is the whole point.",
+      title: "Built for real understanding",
+      description: "Less noise, better craft, deeper intuition.",
     },
     {
-      title: "Reading late?",
-      description: "Light, Auto, and Dark live in the top corner.",
+      title: "Easy on the eyes",
+      description: "Switch between Light, Auto, and Dark in the top corner.",
     },
     {
-      title: "Still poking me?",
-      description: "Good. The universe isn't going to understand itself.",
+      title: "Still exploring",
+      description: "Good tools should reward curiosity.",
     },
   ],
 } as const;
@@ -80,35 +80,37 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
     id: "now",
     indexLabel: "01",
     tabLabel: "Now",
-    title: "Learn it for real.",
-    lead: "I cared about learning tools before the AI wave — mostly out of spite for how bad they were.",
+    stepLabel: "Build intuition",
+    title: "Build real intuition.",
+    lead: "Even before modern AI, I wanted learning software that felt calm, personal, and genuinely good to use.",
     paragraphs: [
       [
         {
           type: "text",
-          value: "Long before AI, ",
+          value:
+            "Today, AI already knows most core curricula better than any single textbook. That shifts the bottleneck to ",
         },
         {
           type: "note",
           id: "bad-software",
-          label: "ugly, slow, paywalled apps",
+          label: "the craft of the experience",
         },
         {
           type: "text",
           value:
-            " made me angry. Now AI teaches core material better than most courses ever did — leaving craft as the real bottleneck.",
+            " — how clearly an idea clicks, how well it adapts to you, and whether it actually stays.",
         },
       ],
       [
         {
           type: "text",
           value:
-            "Axinder is my answer: fast, personal lessons that build real intuition for work that matters — including ",
+            "With Axinder, I'm building a faster, more personal way to learn skills that matter in real work — turning genuine understanding into ",
         },
         {
           type: "note",
           id: "real-leverage",
-          label: "building real leverage",
+          label: "lasting leverage",
         },
         {
           type: "text",
@@ -118,8 +120,9 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
     ],
     spotlight: {
       name: "Axinder",
-      tagline: "Personal learning that builds intuition, not busywork.",
-      actionLabel: "Try a lesson",
+      tagline:
+        "A personal AI tutor shaped around how understanding actually sticks.",
+      actionLabel: "Explore the tutor",
       href: "https://www.axinder.com",
     },
   },
@@ -127,29 +130,31 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
     id: "next",
     indexLabel: "02",
     tabLabel: "Next",
-    title: "Prove it, 2–10× faster.",
-    lead: "Mocking degrees is easy. Building what replaces them is the work.",
+    stepLabel: "Prove the work",
+    title: "Prove the work, faster.",
+    lead: "Traditions endure until something unmistakably better earns trust.",
     paragraphs: [
       [
         {
           type: "text",
-          value: "I don't hate school — I hate broken proof. Too many ",
+          value: "Formal degrees served the world for centuries, yet ",
         },
         {
           type: "note",
           id: "credentials",
-          label: "centuries-old certificates",
+          label: "paper signals",
         },
         {
           type: "text",
-          value: " reward copying and cramming over understanding.",
+          value:
+            " still struggle to separate surface memorization from real capability.",
         },
       ],
       [
         {
           type: "text",
           value:
-            "Next, Axinder takes a motivated learner from first lesson to genuinely job-ready — no gaming the test, no four-year detour.",
+            "Next, I want Axinder to carry a motivated learner from their first question to work-ready mastery — offering clear, honest proof of what they can do, in a fraction of the usual time.",
         },
       ],
     ],
@@ -158,30 +163,32 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
     id: "long-game",
     indexLabel: "03",
     tabLabel: "Long game",
-    title: "Keep thinking.",
-    lead: "If you can read and you care enough, you should be able to learn anything.",
+    stepLabel: "Keep exploring",
+    title: "Keep exploring.",
+    lead: "Basic literacy and genuine drive should be enough to grasp almost anything.",
     paragraphs: [
       [
         {
           type: "text",
-          value: "I don't buy sci-fi AI doom. What scares me is ",
+          value:
+            "I'm not a pessimist about AI. What I want to guard against is ",
         },
         {
           type: "note",
           id: "stagnation",
-          label: "meat without minds",
+          label: "quiet stagnation",
         },
         {
           type: "text",
           value:
-            " — coasting while machines do the thinking until we stop pushing into the unknown.",
+            " — outsourcing so much of our thinking that we stop building intuition about the world.",
         },
       ],
       [
         {
           type: "text",
           value:
-            "A human paired with AI is exponentially more capable. Curiosity, pride, or a paycheck — whatever the spark, anyone should be able to go deep and keep pushing what we understand about the universe.",
+            "A person paired with AI can reach remarkably far. Whether someone is driven by a career, independence, or wonder, I want tools that help humanity keep pushing its understanding of reality.",
         },
       ],
     ],
@@ -191,58 +198,57 @@ export const HORIZONS: Readonly<Record<HorizonId, HorizonEntry>> = {
 export const NOTES: Readonly<Record<NoteId, NoteEntry>> = {
   "bad-software": {
     tag: "Origin",
-    title: "It started with bad apps",
-    body: "Cluttered screens, paywalled PDFs, clunky drills. Bad design kills curiosity faster than hard math ever did.",
+    title: "Craft before hype",
+    body: "Cluttered interfaces and rigid drills quietly drain curiosity. Good learning software should feel as considered as the best tools people use to create.",
   },
   "real-leverage": {
-    tag: "Candid",
-    title: "Yes, money counts",
-    body: "Wealth in Naval's sense: rare understanding that compounds into leverage and freedom — not hustle-bro noise.",
+    tag: "Grounded",
+    title: "Skills that change a life",
+    body: "Real understanding compounds into meaningful work, financial independence, and freedom of choice — the quiet kind of wealth built on capability.",
   },
   credentials: {
-    tag: "The bar",
-    title: "Replace before you retire",
-    body: "You don't earn the right to retire degrees until you ship proof nobody can cheat.",
+    tag: "Standard",
+    title: "Earn the alternative",
+    body: "Critiquing old credentials is easy. The only fair way forward is building a system that genuinely proves real understanding without shortcuts.",
   },
   stagnation: {
-    tag: "Real fear",
-    title: "Anti-stagnation, not anti-AI",
-    body: "AI is the strongest lever humans have built. Using it as an excuse to stop understanding the universe would be the real loss.",
+    tag: "Horizon",
+    title: "Sharper, not passive",
+    body: "AI is the strongest lever for thought we've ever had. Its highest use isn't thinking instead of us — it's helping more people understand deeper than before.",
   },
 };
 
 export const RECALL = {
   triggerLabel: "See what stuck",
-  replayLabel: "Replay recall",
-  title: "Did the arc stick?",
-  description: "Three cards, one per beat. Guess first, then flip.",
+  replayLabel: "Revisit the arc",
+  title: "Three ideas, in brief",
+  description: "Tap each card to reveal the thread behind what I'm building.",
   cards: [
     {
       horizon: "now",
       badge: "01 · Now",
-      prompt: "What's broken in learning?",
+      prompt: "Where the bottleneck moved",
       answer:
-        "The craft. AI handles the material; the tools still feel awful. Axinder makes learning fast, personal, and real.",
+        "AI handles the curriculum; craft and personal intuition are what make learning actually stick.",
     },
     {
       horizon: "next",
       badge: "02 · Next",
-      prompt: "What beats a degree?",
+      prompt: "What earns real trust",
       answer:
-        "Proof you can actually do the work — first lesson to job-ready, 2–10× faster, no cheating.",
+        "Honest proof of capability — taking drive from first question to real work, far faster.",
     },
     {
       horizon: "long-game",
       badge: "03 · Long game",
-      prompt: "What's the real AI risk?",
+      prompt: "Why we still learn",
       answer:
-        "Not robots. Stagnation. Anyone who can read should be able to learn anything and keep pushing.",
+        "So smarter tools make humans more curious and capable, never passive spectators.",
     },
   ] satisfies ReadonlyArray<RecallCard>,
-  rememberedNote:
-    "That's the arc: learn it for real, prove it fast, keep thinking.",
-  completedEcho: "Learn it for real · Prove it fast · Keep thinking",
-  resetLabel: "Flip them back",
+  rememberedNote: "Build intuition, prove the work, keep exploring.",
+  completedEcho: "Build intuition · Prove the work · Keep exploring",
+  resetLabel: "Reset cards",
   closeLabel: "Done",
 } as const;
 
@@ -271,8 +277,9 @@ export const CONTROLS = {
   portraitButtonLabel: "Nudge San's portrait",
   themeGroupLabel: "Color theme",
   horizonGroupLabel: "Horizon",
-  continuePrefix: "Continue to",
+  nextPrefix: "Next:",
   noteCloseLabel: "Got it",
+  toastDismissLabel: "Dismiss notification",
   progressSuffix: "read",
   notesExploredSingular: "margin note",
   notesExploredPlural: "margin notes",
